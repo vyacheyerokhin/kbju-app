@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="КБЖУ">
+  <meta name="theme-color" content="#1E3A2A">
+  <title>КБЖУ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F0EDE7; --surface: #FFFFFF; --surface2: #E8E4DD;
+      --green: #1E3A2A; --green-mid: #2E5C40; --amber: #C97B38;
+      --text: #18180F; --muted: #7A7769; --border: #D4CFC6;
+      --red: #B33A2A; --blue: #3A7BD5; --orange: #D4832A; --leafgreen: #3A9455;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; overflow-x: hidden; }
+    .app { max-width: 430px; margin: 0 auto; min-height: 100dvh; padding-top: var(--safe-top); padding-bottom: calc(100px + var(--safe-bot)); }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px 0; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .app-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; color: var(--green); letter-spacing: -0.5px; }
+    .icon-btn { width: 32px; height: 32px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; color: var(--muted); transition: all 0.15s; flex-shrink: 0; }
+    .icon-btn:active { background: var(--surface2); transform: scale(0.9); }
+    .date-nav { display: flex; align-items: center; gap: 6px; }
+    .date-btn { width: 30px; height: 30px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--muted); transition: all 0.15s; }
+    .date-btn:active { background: var(--surface2); transform: scale(0.9); }
+    .date-label { font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; min-width: 70px; text-align: center; }
+    .date-label.today { color: var(--green); }
+
+    /* SUMMARY */
+    .summary { margin: 16px 20px 0; background: var(--green); border-radius: 22px; padding: 22px 20px 20px; color: #fff; }
+    .summary-top { display: flex; align-items: flex-end; gap: 6px; margin-bottom: 6px; }
+    .kcal-big { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 300; line-height: 1; }
+    .kcal-unit { font-size: 17px; opacity: 0.6; margin-bottom: 8px; }
+    .items-count { font-size: 12px; opacity: 0.55; margin-bottom: 18px; }
+    .macro-rows { display: flex; flex-direction: column; gap: 10px; }
+    .mrow { display: grid; grid-template-columns: 16px 1fr 90px; align-items: center; gap: 10px; }
+    .mrow-letter { font-size: 12px; font-weight: 700; opacity: 0.7; text-align: center; }
+    .mtrack { height: 5px; background: rgba(255,255,255,0.18); border-radius: 3px; overflow: hidden; }
+    .mfill { height: 100%; border-radius: 3px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+    .fp { background: #7EC8FF; } .ff { background: #FFD47E; } .fc { background: #86E29A; } .fover { background: #FF8A80; }
+    .mval { font-size: 11px; font-weight: 600; text-align: right; opacity: 0.85; white-space: nowrap; }
+
+    /* SECTION HEADER */
+    .section-header { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px 10px; }
+    .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+    .export-btn { font-size: 11px; font-weight: 600; color: var(--green); background: var(--surface); border: 1.5px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; transition: all 0.15s; }
+    .export-btn:active { background: var(--surface2); }
+
+    /* FOOD LIST */
+    .food-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+    .food-item { background: var(--surface); border-radius: 16px; padding: 13px 14px; display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.22s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .fi-left { flex: 1; min-width: 0; margin-right: 12px; }
+    .fi-name { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+    .fi-macros { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); }
+    .fi-macros .mp { color: var(--blue); font-weight: 500; }
+    .fi-macros .mf { color: var(--orange); font-weight: 500; }
+    .fi-macros .mc { color: var(--leafgreen); font-weight: 500; }
+    .fi-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .fi-kcal { text-align: right; }
+    .fi-kcal-val { font-size: 16px; font-weight: 700; }
+    .fi-kcal-lbl { font-size: 10px; color: var(--muted); }
+    .fi-del { width: 28px; height: 28px; border: none; background: none; color: var(--muted); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.35; border-radius: 50%; transition: opacity 0.15s, background 0.15s; flex-shrink: 0; }
+    .fi-del:active { opacity: 1; color: var(--red); background: #FFF0EE; }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 36px 20px; color: var(--muted); }
+    .empty-icon { font-size: 44px; opacity: 0.35; margin-bottom: 10px; }
+    .empty-text { font-size: 14px; }
+
+    /* FAB */
+    .fab { position: fixed; bottom: calc(28px + var(--safe-bot)); right: 24px; width: 58px; height: 58px; background: var(--amber); color: #fff; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 24px rgba(201,123,56,0.45); transition: transform 0.18s, box-shadow 0.18s; z-index: 100; }
+    .fab:active { transform: scale(0.91); }
+    .fab.open { transform: rotate(45deg); }
+
+    /* SHEETS */
+    .overlay { position: fixed; inset: 0; background: rgba(24,24,15,0.45); backdrop-filter: blur(6px); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .overlay.on { opacity: 1; pointer-events: all; }
+    .sheet { position: fixed; bottom: 0; left: 0; right: 0; max-width: 430px; margin: 0 auto; background: var(--surface); border-radius: 26px 26px 0 0; padding: 0 20px calc(20px + var(--safe-bot)); z-index: 201; transform: translateY(105%); transition: transform 0.36s cubic-bezier(0.32,0.72,0,1); max-height: 94dvh; overflow-y: auto; }
+    .sheet.on { transform: translateY(0); }
+    .sheet-handle { width: 38px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 20px; }
+    .sheet-head { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin-bottom: 18px; }
+
+    /* FORM */
+    .flabel { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .finput { width: 100%; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; color: var(--text); background: var(--bg); outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
+    .finput:focus { border-color: var(--green); }
+    .finput.err { border-color: var(--red); }
+    .frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fgroup { margin-bottom: 12px; }
+
+    /* PREVIEW */
+    .preview { background: var(--bg); border-radius: 16px; padding: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; margin-bottom: 14px; }
+    .prev-val { font-size: 20px; font-weight: 700; color: var(--text); }
+    .prev-val.p { color: var(--blue); } .prev-val.f { color: var(--orange); } .prev-val.c { color: var(--leafgreen); }
+    .prev-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .btn-primary { width: 100%; padding: 15px; background: var(--green); color: #fff; border: none; border-radius: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; margin-top: 4px; }
+    .btn-primary:active { background: var(--green-mid); transform: scale(0.98); }
+    .btn-secondary { width: 100%; padding: 12px; margin-top: 8px; background: none; color: var(--muted); border: 1.5px solid var(--border); border-radius: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:active { background: var(--surface2); }
+
+    /* GOALS */
+    .goals-note { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+    .goals-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: calc(104px + var(--safe-bot)); left: 50%; transform: translateX(-50%) translateY(16px); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; white-space: nowrap; z-index: 999; }
+    .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="app-title">КБЖУ</div>
+      <button class="icon-btn" onclick="openGoals()">⚙️</button>
+    </div>
+    <div class="date-nav">
+      <button class="date-btn" onclick="changeDay(-1)">‹</button>
+      <div class="date-label" id="dateLabel" onclick="goToday()"></div>
+      <button class="date-btn" onclick="changeDay(1)">›</button>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-top">
+      <div class="kcal-big" id="totalK">0</div>
+      <div class="kcal-unit">ккал</div>
+    </div>
+    <div class="items-count" id="itemsCount">Ничего не добавлено</div>
+    <div class="macro-rows">
+      <div class="mrow">
+        <div class="mrow-letter" style="color:#7EC8FF">Б</div>
+        <div class="mtrack"><div class="mfill fp" id="bP" style="width:0%"></div></div>
+        <div class="mval" id="vP">0 г</div>
+      </div>
+      <div class="mrow">
+        <div class="mrow-letter" style="color:#FFD47E">Ж</div>
+        <div class="mtrack"><div class="mfill ff" id="bF" style="width:0%"></div></div>
+        <div class="mval" id="vF">0 г</div>
+      </div>
+      <div class="mrow">
+        <div class="mrow-letter" style="color:#86E29A">У</div>
+        <div class="mtrack"><div class="mfill fc" id="bC" style="width:0%"></div></div>
+        <div class="mval" id="vC">0 г</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title" id="sectionTitle">Сегодня</div>
+    <button class="export-btn" onclick="exportMd()">📋 Markdown</button>
+  </div>
+  <div class="food-list" id="foodList"></div>
+
+</div>
+
+<button class="fab" id="fab" onclick="toggleAdd()">+</button>
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- ADD FOOD SHEET -->
+<div class="sheet" id="sheetAdd">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">Добавить еду</div>
+
+  <div class="fgroup">
+    <label class="flabel">Название</label>
+    <input class="finput" id="fN" type="text" placeholder="Куриная грудка"
+      autocomplete="off" autocorrect="off" spellcheck="false"
+      onkeydown="nav(event,'fN')">
+  </div>
+
+  <div class="frow2" style="margin-bottom:12px">
+    <div>
+      <label class="flabel">Белки (г)</label>
+      <input class="finput" id="fP" type="text" inputmode="decimal" placeholder="0"
+        oninput="updPrev()" onkeydown="nav(event,'fP')">
+    </div>
+    <div>
+      <label class="flabel">Жиры (г)</label>
+      <input class="finput" id="fF" type="text" inputmode="decimal" placeholder="0"
+        oninput="updPrev()" onkeydown="nav(event,'fF')">
+    </div>
+  </div>
+
+  <div class="frow2" style="margin-bottom:16px">
+    <div>
+      <label class="flabel">Углеводы (г)</label>
+      <input class="finput" id="fC" type="text" inputmode="decimal" placeholder="0"
+        oninput="updPrev()" onkeydown="nav(event,'fC')">
+    </div>
+    <div>
+      <label class="flabel">Вес (г)</label>
+      <input class="finput" id="fW" type="text" inputmode="decimal" placeholder="100"
+        onkeydown="nav(event,'fW')">
+    </div>
+  </div>
+
+  <div class="preview">
+    <div>
+      <div class="prev-val" id="prK">0</div>
+      <div class="prev-lbl">ккал</div>
+    </div>
+    <div>
+      <div class="prev-val p" id="prP">0</div>
+      <div class="prev-lbl">белки г</div>
+    </div>
+    <div>
+      <div class="prev-val f" id="prF">0</div>
+      <div class="prev-lbl">жиры г</div>
+    </div>
+    <div>
+      <div class="prev-val c" id="prC">0</div>
+      <div class="prev-lbl">углев. г</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="addFood()">Добавить в дневник</button>
+</div>
+
+<!-- GOALS SHEET -->
+<div class="sheet" id="sheetGoals">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">Суточная цель</div>
+  <p class="goals-note">Укажи целевые граммы по каждому макросу — прогресс-бары будут показывать, сколько ты уже съел от нормы. Калории рассчитаются автоматически.</p>
+  <div class="goals-row">
+    <div>
+      <label class="flabel" style="color:var(--blue)">Белки (г)</label>
+      <input class="finput" id="gP" type="text" inputmode="decimal" placeholder="150">
+    </div>
+    <div>
+      <label class="flabel" style="color:var(--orange)">Жиры (г)</label>
+      <input class="finput" id="gF" type="text" inputmode="decimal" placeholder="70">
+    </div>
+    <div>
+      <label class="flabel" style="color:var(--leafgreen)">Углев. (г)</label>
+      <input class="finput" id="gC" type="text" inputmode="decimal" placeholder="250">
+    </div>
+  </div>
+  <button class="btn-primary" onclick="saveGoals()">Сохранить</button>
+  <button class="btn-secondary" onclick="clearGoals()">Сбросить цели</button>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────
+  let curDate   = todayStr();
+  let curSheet  = null; // 'add' | 'goals'
+  const FIELDS  = ['fN','fP','fF','fC','fW'];
+
+  // ── Storage ────────────────────────────────────────────────
+  const LS_DATA  = 'kbju_data';
+  const LS_GOALS = 'kbju_goals';
+  const getData  = () => { try { return JSON.parse(localStorage.getItem(LS_DATA)||'{}'); } catch { return {}; } };
+  const putData  = d => localStorage.setItem(LS_DATA, JSON.stringify(d));
+  const getGoals = () => { try { return JSON.parse(localStorage.getItem(LS_GOALS)||'{}'); } catch { return {}; } };
+  const putGoals = g => localStorage.setItem(LS_GOALS, JSON.stringify(g));
+
+  // ── Date ───────────────────────────────────────────────────
+  function todayStr() { return new Date().toISOString().slice(0,10); }
+  function fmtDate(s) {
+    const t = todayStr(), y = new Date(Date.now()-86400000).toISOString().slice(0,10);
+    if (s===t) return 'Сегодня';
+    if (s===y) return 'Вчера';
+    return new Date(s+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+  }
+  function changeDay(d) {
+    const dt = new Date(curDate+'T12:00:00');
+    dt.setDate(dt.getDate()+d);
+    const n = dt.toISOString().slice(0,10);
+    if (n > todayStr()) return;
+    curDate = n; render();
+  }
+  function goToday() { curDate = todayStr(); render(); }
+
+  // ── Render ─────────────────────────────────────────────────
+  function render() {
+    const foods = (getData()[curDate]||[]);
+    const goals = getGoals();
+
+    // Date label
+    const lbl = document.getElementById('dateLabel');
+    lbl.textContent = fmtDate(curDate);
+    lbl.className = 'date-label' + (curDate===todayStr()?' today':'');
+
+    // Totals
+    let tK=0,tP=0,tF=0,tC=0;
+    foods.forEach(f => { tK+=f.k; tP+=f.p; tF+=f.f; tC+=f.c; });
+
+    document.getElementById('totalK').textContent = Math.round(tK);
+    document.getElementById('itemsCount').textContent = foods.length
+      ? `${foods.length} ${pl(foods.length,'продукт','продукта','продуктов')}`
+      : 'Ничего не добавлено';
+    document.getElementById('sectionTitle').textContent = fmtDate(curDate);
+
+    // Bars
+    setBar('P', tP, goals.p, 'fp');
+    setBar('F', tF, goals.f, 'ff');
+    setBar('C', tC, goals.c, 'fc');
+
+    // Fallback relative if no goals
+    const hasGoals = goals.p || goals.f || goals.c;
+    if (!hasGoals) {
+      const mx = Math.max(tP,tF,tC,1);
+      ['P','F','C'].forEach((k,i) => {
+        const v = [tP,tF,tC][i], cls = ['fp','ff','fc'][i];
+        document.getElementById('b'+k).style.width = (v/mx*100)+'%';
+        document.getElementById('b'+k).className = 'mfill '+cls;
+        document.getElementById('v'+k).textContent = r1(v)+' г';
+      });
+    }
+
+    // Food list
+    const list = document.getElementById('foodList');
+    if (!foods.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🍽️</div><div class="empty-text">Нажми + чтобы добавить еду</div></div>`;
+      return;
+    }
+    list.innerHTML = foods.map((f,i) => `
+      <div class="food-item">
+        <div class="fi-left">
+          <div class="fi-name">${esc(f.n)}</div>
+          <div class="fi-macros">
+            <span class="mp">Б ${f.p}г</span>
+            <span class="mf">Ж ${f.f}г</span>
+            <span class="mc">У ${f.c}г</span>
+            ${f.w?`<span>· ${f.w}г</span>`:''}
+          </div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-kcal">
+            <div class="fi-kcal-val">${Math.round(f.k)}</div>
+            <div class="fi-kcal-lbl">ккал</div>
+          </div>
+          <button class="fi-del" onclick="del(${i})">×</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function setBar(key, val, goal, defCls) {
+    const fill = document.getElementById('b'+key);
+    const txt  = document.getElementById('v'+key);
+    if (goal && goal > 0) {
+      const pct  = Math.min(100, val/goal*100);
+      const over = val > goal;
+      fill.style.width = pct+'%';
+      fill.className   = 'mfill '+(over?'fover':defCls);
+      txt.textContent  = r1(val)+' / '+goal+' г';
+    }
+    // else handled by relative block in render()
+  }
+
+  // ── Delete ─────────────────────────────────────────────────
+  function del(i) {
+    const d = getData();
+    (d[curDate]||[]).splice(i,1);
+    putData(d); render();
+  }
+
+  // ── Form preview ───────────────────────────────────────────
+  function updPrev() {
+    const p=pn('fP'), f=pn('fF'), c=pn('fC');
+    const k = Math.round((p*4+f*9+c*4)*10)/10;
+    document.getElementById('prK').textContent = k;
+    document.getElementById('prP').textContent = r1(p);
+    document.getElementById('prF').textContent = r1(f);
+    document.getElementById('prC').textContent = r1(c);
+  }
+
+  // ── Enter navigation ───────────────────────────────────────
+  function nav(e, id) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const i = FIELDS.indexOf(id);
+    if (i < FIELDS.length-1) document.getElementById(FIELDS[i+1]).focus();
+    else addFood();
+  }
+
+  // ── Add food ───────────────────────────────────────────────
+  function addFood() {
+    const name = document.getElementById('fN').value.trim();
+    if (!name) {
+      const el = document.getElementById('fN');
+      el.classList.add('err'); el.focus();
+      setTimeout(()=>el.classList.remove('err'),1500);
+      return;
+    }
+    const p=pn('fP'), f=pn('fF'), c=pn('fC'), w=pn('fW');
+    const k = Math.round((p*4+f*9+c*4)*10)/10;
+
+    const d = getData();
+    if (!d[curDate]) d[curDate]=[];
+    d[curDate].push({ n:name, p:r1(p), f:r1(f), c:r1(c), w:w||0, k });
+    putData(d);
+
+    FIELDS.forEach(id => document.getElementById(id).value='');
+    updPrev();
+    closeAll();
+    render();
+    toast('Добавлено ✓');
+  }
+
+  // ── Goals ──────────────────────────────────────────────────
+  function openGoals() {
+    const g = getGoals();
+    document.getElementById('gP').value = g.p||'';
+    document.getElementById('gF').value = g.f||'';
+    document.getElementById('gC').value = g.c||'';
+    open('goals');
+  }
+  function saveGoals() {
+    putGoals({ p:pn('gP')||0, f:pn('gF')||0, c:pn('gC')||0 });
+    closeAll(); render(); toast('Цели сохранены ✓');
+  }
+  function clearGoals() {
+    putGoals({});
+    ['gP','gF','gC'].forEach(id=>document.getElementById(id).value='');
+    closeAll(); render(); toast('Цели сброшены');
+  }
+
+  // ── Markdown export ────────────────────────────────────────
+  function exportMd() {
+    const foods = (getData()[curDate]||[]);
+    if (!foods.length) { toast('Нет данных'); return; }
+
+    const goals = getGoals();
+    let tK=0,tP=0,tF=0,tC=0;
+    foods.forEach(f => { tK+=f.k; tP+=f.p; tF+=f.f; tC+=f.c; });
+
+    const dateStr = new Date(curDate+'T12:00:00')
+      .toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+
+    let md = `# КБЖУ — ${dateStr}\n\n`;
+    md += `| Продукт | Б (г) | Ж (г) | У (г) | Вес (г) | Ккал |\n`;
+    md += `|---------|-------|-------|-------|---------|------|\n`;
+    foods.forEach(f => {
+      md += `| ${f.n} | ${f.p} | ${f.f} | ${f.c} | ${f.w||'—'} | ${Math.round(f.k)} |\n`;
+    });
+    md += `| **Итого** | **${r1(tP)}** | **${r1(tF)}** | **${r1(tC)}** | — | **${Math.round(tK)}** |\n`;
+
+    if (goals.p||goals.f||goals.c) {
+      md += `\n## Цели\n| Макрос | Съедено | Цель | % |\n|--------|---------|------|-|\n`;
+      if (goals.p) md += `| Белки | ${r1(tP)} г | ${goals.p} г | ${Math.round(tP/goals.p*100)}% |\n`;
+      if (goals.f) md += `| Жиры  | ${r1(tF)} г | ${goals.f} г | ${Math.round(tF/goals.f*100)}% |\n`;
+      if (goals.c) md += `| Углев.| ${r1(tC)} г | ${goals.c} г | ${Math.round(tC/goals.c*100)}% |\n`;
+    }
+
+    navigator.clipboard.writeText(md).then(
+      () => toast('Скопировано ✓'),
+      () => { // fallback
+        const ta = Object.assign(document.createElement('textarea'),{value:md,style:'position:fixed;opacity:0'});
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+        toast('Скопировано ✓');
+      }
+    );
+  }
+
+  // ── Sheet control ──────────────────────────────────────────
+  function open(type) {
+    curSheet = type;
+    document.getElementById('overlay').classList.add('on');
+    if (type==='add') {
+      document.getElementById('sheetAdd').classList.add('on');
+      document.getElementById('fab').classList.add('open');
+      setTimeout(()=>document.getElementById('fN').focus(), 380);
+    } else {
+      document.getElementById('sheetGoals').classList.add('on');
+    }
+  }
+  function closeAll() {
+    document.getElementById('overlay').classList.remove('on');
+    document.getElementById('sheetAdd').classList.remove('on');
+    document.getElementById('sheetGoals').classList.remove('on');
+    document.getElementById('fab').classList.remove('open');
+    curSheet = null;
+  }
+  function toggleAdd() { curSheet==='add' ? closeAll() : open('add'); }
+
+  // ── Toast ──────────────────────────────────────────────────
+  let _tt;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('on');
+    clearTimeout(_tt); _tt = setTimeout(()=>el.classList.remove('on'), 2200);
+  }
+
+  // ── Helpers ────────────────────────────────────────────────
+  function pn(id) { return parseFloat(document.getElementById(id).value.replace(',','.'))||0; }
+  function r1(n) { return Math.round(n*10)/10; }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function pl(n,a,b,c) { const m=n%10,h=n%100; return m===1&&h!==11?a:[2,3,4].includes(m)&&![12,13,14].includes(h)?b:c; }
+
+  // ── Service Worker ─────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    const sw = `self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+  }
+
+  render();
+</script>
+</body>
+</html>
